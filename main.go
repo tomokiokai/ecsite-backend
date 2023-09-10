@@ -11,14 +11,25 @@ import (
 
 func main() {
 	db := db.NewDB()
+
+	// User related components
 	userValidator := validator.NewUserValidator()
-	taskValidator := validator.NewTaskValidator()
 	userRepository := repository.NewUserRepository(db)
-	taskRepository := repository.NewTaskRepository(db)
 	userUsecase := usecase.NewUserUsecase(userRepository, userValidator)
-	taskUsecase := usecase.NewTaskUsecase(taskRepository, taskValidator)
 	userController := controller.NewUserController(userUsecase)
+
+	// Task related components
+	taskValidator := validator.NewTaskValidator()
+	taskRepository := repository.NewTaskRepository(db)
+	taskUsecase := usecase.NewTaskUsecase(taskRepository, taskValidator)
 	taskController := controller.NewTaskController(taskUsecase)
-	e := router.NewRouter(userController, taskController)
+
+	// Blog related components
+	blogValidator := validator.NewBlogValidator()
+	blogRepository := repository.NewBlogRepository(db)
+	blogUsecase := usecase.NewBlogUsecase(blogRepository, blogValidator)
+	blogController := controller.NewBlogController(blogUsecase)
+
+	e := router.NewRouter(userController, taskController, blogController) // Assuming you modify the NewRouter function to accept the blogController
 	e.Logger.Fatal(e.Start(":8080"))
 }
