@@ -10,6 +10,17 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+// APIキーを検証するカスタムミドルウェア
+func ValidateBuildAPIKey(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		apiKey := c.Request().Header.Get("X-BUILD-API-KEY")
+		if apiKey != os.Getenv("BUILD_API_KEY") {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid build API key")
+		}
+		return next(c)
+	}
+}
+
 func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc controller.IBlogController) *echo.Echo {
 	e := echo.New()
 
@@ -60,6 +71,11 @@ func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc 
 	b.POST("", bc.CreateBlog)
 	b.PUT("/:blogId", bc.UpdateBlog)
 	b.DELETE("/:blogId", bc.DeleteBlog)
+
+	// ビルド専用のエンドポイント
+	build := e.Group("/build")
+	build.Use(ValidateBuildAPIKey)  // カスタムミドルウェアを適用
+	build.GET("/blogs", bc.GetBlogsForBuild)
 
 	return e
 }

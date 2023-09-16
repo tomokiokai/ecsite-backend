@@ -14,6 +14,7 @@ type IBlogRepository interface {
 	CreateBlog(blog *model.Blog) error
 	UpdateBlog(blog *model.Blog, userId uint, blogId uint) error
 	DeleteBlog(userId uint, blogId uint) error
+	GetAllBlogsForBuild() ([]model.Blog, error)
 }
 
 type blogRepository struct {
@@ -69,3 +70,12 @@ func (br *blogRepository) DeleteBlog(userId uint, blogId uint) error {
 	}
 	return nil
 }
+
+func (br *blogRepository) GetAllBlogsForBuild() ([]model.Blog, error) {
+    var blogs []model.Blog
+    if err := br.db.Joins("User").Order("created_at").Find(&blogs).Error; err != nil {
+        return nil, err
+    }
+    return blogs, nil
+}
+

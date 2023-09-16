@@ -12,6 +12,7 @@ type IBlogUsecase interface {
 	CreateBlog(blog model.Blog) (model.BlogResponse, error)
 	UpdateBlog(blog model.Blog, userId uint, blogId uint) (model.BlogResponse, error)
 	DeleteBlog(userId uint, blogId uint) error
+	GetAllBlogsForBuild() ([]model.Blog, error)
 }
 
 type blogUsecase struct {
@@ -96,4 +97,8 @@ func (bu *blogUsecase) DeleteBlog(userId uint, blogId uint) error {
 		return err
 	}
 	return nil
+}
+
+func (bu *blogUsecase) GetAllBlogsForBuild() ([]model.Blog, error) {
+    return bu.br.GetAllBlogsForBuild()
 }

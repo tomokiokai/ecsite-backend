@@ -16,6 +16,7 @@ type IBlogController interface {
 	CreateBlog(c echo.Context) error
 	UpdateBlog(c echo.Context) error
 	DeleteBlog(c echo.Context) error
+	GetBlogsForBuild(c echo.Context) error
 }
 
 type blogController struct {
@@ -99,3 +100,13 @@ func (bc *blogController) DeleteBlog(c echo.Context) error {
 	}
 	return c.NoContent(http.StatusNoContent)
 }
+
+func (bc *blogController) GetBlogsForBuild(c echo.Context) error {
+    // すべてのユーザーのブログを取得
+    blogs, err := bc.bu.GetAllBlogsForBuild()
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, err.Error())
+    }
+    return c.JSON(http.StatusOK, blogs)
+}
+
