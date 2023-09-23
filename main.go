@@ -30,6 +30,12 @@ func main() {
 	blogUsecase := usecase.NewBlogUsecase(blogRepository, blogValidator)
 	blogController := controller.NewBlogController(blogUsecase)
 
-	e := router.NewRouter(userController, taskController, blogController) // Assuming you modify the NewRouter function to accept the blogController
+	// Shop related components
+	shopValidator := validator.NewShopValidator()
+	shopRepository := repository.NewShopRepository(db)
+	shopUsecase := usecase.NewShopUsecase(shopRepository, shopValidator)
+	shopController := controller.NewShopController(shopUsecase)
+
+	e := router.NewRouter(userController, taskController, blogController, shopController) // Modify the NewRouter function to accept the shopController
 	e.Logger.Fatal(e.Start(":8080"))
 }

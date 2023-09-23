@@ -21,7 +21,7 @@ func ValidateBuildAPIKey(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc controller.IBlogController) *echo.Echo {
+func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc controller.IBlogController, sc controller.IShopController) *echo.Echo {
 	e := echo.New()
 
 	// CORSミドルウェアの設定
@@ -47,6 +47,9 @@ func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc 
 	e.POST("/login", uc.LogIn)
 	e.POST("/logout", uc.LogOut)
 	e.GET("/csrf", uc.CsrfToken)
+
+	e.GET("/shops", sc.GetAllShops)
+	e.GET("/shops/:shopId", sc.GetShopById)
 
 	// tasksエンドポイントの設定
 	t := e.Group("/tasks")
@@ -76,6 +79,20 @@ func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc 
 	build := e.Group("/build")
 	build.Use(ValidateBuildAPIKey)  // カスタムミドルウェアを適用
 	build.GET("/blogs", bc.GetBlogsForBuild)
+
+	// shopsエンドポイントの設定
+	// s := e.Group("/shops")
+	// s.Use(echojwt.WithConfig(echojwt.Config{
+	// 	SigningKey:  []byte(os.Getenv("SECRET")),
+	// 	TokenLookup: "header:Authorization",
+	// }))
+	// // JWTトークンとCSRFトークンの検証が必要なエンドポイント
+	// s.POST("", sc.CreateShop)
+	// s.PUT("/:shopId", sc.UpdateShop)
+	// s.DELETE("/:shopId", sc.DeleteShop)
+
+	// JWTトークンとCSRFトークンの検証をスキップするエンドポイント
+	
 
 	return e
 }
