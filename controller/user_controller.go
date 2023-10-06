@@ -1,11 +1,14 @@
 package controller
 
 import (
+	"fmt"
 	"go-rest-api/model"
 	"go-rest-api/usecase"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
+	"encoding/json"
 
 	"github.com/labstack/echo/v4"
 )
@@ -42,10 +45,11 @@ func (uc *userController) LogIn(c echo.Context) error {
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
-	tokenString, err := uc.uu.Login(user)
+	tokenString, userRes, err := uc.uu.Login(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
+	// トークンをCookieに保存
 	cookie := new(http.Cookie)
 	cookie.Name = "token"
 	cookie.Value = tokenString
@@ -56,6 +60,24 @@ func (uc *userController) LogIn(c echo.Context) error {
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(cookie)
+
+	// ユーザー情報をCookieに保存
+	userInfo, err := json.Marshal(userRes)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	encodedUserInfo := url.QueryEscape(string(userInfo))
+	userCookie := new(http.Cookie)
+	userCookie.Name = "userInfo"
+	userCookie.Value = encodedUserInfo
+	userCookie.Expires = time.Now().Add(3 * time.Hour)
+	userCookie.Path = "/"
+	userCookie.Domain = os.Getenv("API_DOMAIN")
+	userCookie.Secure = true
+	userCookie.HttpOnly = true
+	userCookie.SameSite = http.SameSiteNoneMode
+	fmt.Println("Encoded User Cookie Value:", userCookie.Value)
+	c.SetCookie(userCookie)
 	return c.NoContent(http.StatusOK)
 }
 

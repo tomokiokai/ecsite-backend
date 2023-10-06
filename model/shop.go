@@ -11,6 +11,7 @@ type Shop struct {
 	Description string    `json:"description" gorm:"not null"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+	Favorites []Favorite `json:"favorites" gorm:"foreignKey:ShopID"`
 }
 
 type ShopResponse struct {

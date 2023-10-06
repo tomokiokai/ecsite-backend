@@ -36,6 +36,13 @@ func main() {
 	shopUsecase := usecase.NewShopUsecase(shopRepository, shopValidator)
 	shopController := controller.NewShopController(shopUsecase)
 
-	e := router.NewRouter(userController, taskController, blogController, shopController) // Modify the NewRouter function to accept the shopController
+	// Favorite related components
+	favoriteValidator := validator.NewFavoriteValidator()
+	favoriteRepository := repository.NewFavoriteRepository(db)
+	favoriteUsecase := usecase.NewFavoriteUsecase(favoriteRepository, shopRepository, userRepository, favoriteValidator)
+	favoriteController := controller.NewFavoriteController(favoriteUsecase)
+
+	e := router.NewRouter(userController, taskController, blogController, shopController, favoriteController) // Modify the NewRouter function to accept the favoriteController
 	e.Logger.Fatal(e.Start(":8080"))
 }
+

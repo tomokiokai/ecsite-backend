@@ -21,7 +21,7 @@ func ValidateBuildAPIKey(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc controller.IBlogController, sc controller.IShopController) *echo.Echo {
+func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc controller.IBlogController, sc controller.IShopController,fc controller.IFavoriteController) *echo.Echo {
 	e := echo.New()
 
 	// CORSミドルウェアの設定
@@ -75,10 +75,21 @@ func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc 
 	b.PUT("/:blogId", bc.UpdateBlog)
 	b.DELETE("/:blogId", bc.DeleteBlog)
 
+	// お気に入りエンドポイントの設定
+    f := e.Group("/favorites")
+    f.Use(echojwt.WithConfig(echojwt.Config{
+        SigningKey:  []byte(os.Getenv("SECRET")),
+        TokenLookup: "header:Authorization",
+    }))
+    f.POST("", fc.AddFavorite)  // お気に入りを追加
+    f.DELETE("/:shopId/:userId", fc.RemoveFavorite)  // お気に入りを削除
+    f.GET("", fc.GetFavorites)  // お気に入りを取得
+
 	// ビルド専用のエンドポイント
 	build := e.Group("/build")
 	build.Use(ValidateBuildAPIKey)  // カスタムミドルウェアを適用
 	build.GET("/blogs", bc.GetBlogsForBuild)
+	build.GET("/favorites", fc.GetFavoritesForBuild)
 
 	// shopsエンドポイントの設定
 	// s := e.Group("/shops")

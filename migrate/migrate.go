@@ -8,7 +8,15 @@ import (
 
 func main() {
 	dbConn := db.NewDB()
-	defer fmt.Println("Successfully Migrated")
 	defer db.CloseDB(dbConn)
-	dbConn.AutoMigrate(&model.User{}, &model.Task{}, &model.Blog{}, &model.Shop{})
+
+	// 既存のモデルと新しい Favorite モデルをマイグレートします
+	err := dbConn.AutoMigrate(&model.User{}, &model.Task{}, &model.Blog{}, &model.Shop{}, &model.Favorite{})
+	if err != nil {
+		fmt.Println("Migration failed:", err)
+		return
+	}
+
+	fmt.Println("Successfully Migrated")
 }
+
