@@ -42,7 +42,15 @@ func main() {
 	favoriteUsecase := usecase.NewFavoriteUsecase(favoriteRepository, shopRepository, userRepository, favoriteValidator)
 	favoriteController := controller.NewFavoriteController(favoriteUsecase)
 
-	e := router.NewRouter(userController, taskController, blogController, shopController, favoriteController) // Modify the NewRouter function to accept the favoriteController
+	// Reservation related components
+	reservationValidator := validator.NewReservationValidator()
+	reservationRepository := repository.NewReservationRepository(db)
+	reservationUsecase := usecase.NewReservationUsecase(reservationRepository, reservationValidator)
+	reservationController := controller.NewReservationController(reservationUsecase)
+
+	// Initialize the router and start the server
+	e := router.NewRouter(userController, taskController, blogController, shopController, favoriteController, reservationController) // Modify to include the reservationController
 	e.Logger.Fatal(e.Start(":8080"))
 }
+
 

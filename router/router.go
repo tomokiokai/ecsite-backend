@@ -21,7 +21,14 @@ func ValidateBuildAPIKey(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc controller.IBlogController, sc controller.IShopController,fc controller.IFavoriteController) *echo.Echo {
+func NewRouter(
+    uc controller.IUserController, 
+    tc controller.ITaskController, 
+    bc controller.IBlogController, 
+    sc controller.IShopController,
+    fc controller.IFavoriteController,
+    rc controller.IReservationController, 
+) *echo.Echo {
 	e := echo.New()
 
 	// CORSミドルウェアの設定
@@ -85,11 +92,24 @@ func NewRouter(uc controller.IUserController, tc controller.ITaskController, bc 
     f.DELETE("/:shopId/:userId", fc.RemoveFavorite)  // お気に入りを削除
     f.GET("", fc.GetFavorites)  // お気に入りを取得
 
+	// reserveエンドポイントの設定
+		r := e.Group("/reservations")
+    r.Use(echojwt.WithConfig(echojwt.Config{
+        SigningKey:  []byte(os.Getenv("SECRET")),
+        TokenLookup: "header:Authorization",
+    }))
+		r.POST("/shop/:shopId", rc.MakeReservation)
+    r.DELETE("/:reservationId", rc.CancelReservation)
+    r.GET("/user/:userId", rc.GetReservationByUser)
+    r.GET("", rc.GetAllReservations)
+    r.PUT("/:reservationId", rc.UpdateReservation)
+
 	// ビルド専用のエンドポイント
 	build := e.Group("/build")
 	build.Use(ValidateBuildAPIKey)  // カスタムミドルウェアを適用
 	build.GET("/blogs", bc.GetBlogsForBuild)
 	build.GET("/favorites", fc.GetFavoritesForBuild)
+	build.GET("/reservations", rc.GetReservationsForBuild)
 
 	// shopsエンドポイントの設定
 	// s := e.Group("/shops")
