@@ -82,6 +82,7 @@ func (uc *userController) LogIn(c echo.Context) error {
 }
 
 func (uc *userController) LogOut(c echo.Context) error {
+	// トークン用のクッキーを削除
 	cookie := new(http.Cookie)
 	cookie.Name = "token"
 	cookie.Value = ""
@@ -92,6 +93,18 @@ func (uc *userController) LogOut(c echo.Context) error {
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(cookie)
+
+	// ユーザー情報用のクッキーを削除
+	userCookie := new(http.Cookie)
+	userCookie.Name = "userInfo"
+	userCookie.Value = ""
+	userCookie.Expires = time.Now() 
+	userCookie.Path = "/"
+	userCookie.Domain = os.Getenv("API_DOMAIN")
+	userCookie.Secure = true
+	userCookie.HttpOnly = true
+	userCookie.SameSite = http.SameSiteNoneMode
+	c.SetCookie(userCookie)
 	return c.NoContent(http.StatusOK)
 }
 

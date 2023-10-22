@@ -111,19 +111,5 @@ func NewRouter(
 	build.GET("/favorites", fc.GetFavoritesForBuild)
 	build.GET("/reservations", rc.GetReservationsForBuild)
 
-	// shopsエンドポイントの設定
-	// s := e.Group("/shops")
-	// s.Use(echojwt.WithConfig(echojwt.Config{
-	// 	SigningKey:  []byte(os.Getenv("SECRET")),
-	// 	TokenLookup: "header:Authorization",
-	// }))
-	// // JWTトークンとCSRFトークンの検証が必要なエンドポイント
-	// s.POST("", sc.CreateShop)
-	// s.PUT("/:shopId", sc.UpdateShop)
-	// s.DELETE("/:shopId", sc.DeleteShop)
-
-	// JWTトークンとCSRFトークンの検証をスキップするエンドポイント
-	
-
 	return e
 }

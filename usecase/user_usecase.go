@@ -33,19 +33,25 @@ func (uu *userUsecase) SignUp(user model.User) (model.UserResponse, error) {
 	if err != nil {
 		return model.UserResponse{}, err
 	}
-	newUser := model.User{Email: user.Email, Password: string(hash)}
+	newUser := model.User{
+		Email: user.Email,
+		Password: string(hash),
+		Name:     user.Name,
+	}
 	if err := uu.ur.CreateUser(&newUser); err != nil {
 		return model.UserResponse{}, err
 	}
 	resUser := model.UserResponse{
 		ID:    newUser.ID,
 		Email: newUser.Email,
+		Name:  newUser.Name,
 	}
 	return resUser, nil
 }
 
-func (uu *userUsecase) Login(user model.User) (string, model.UserResponse, error) {  // シグネチャを変更
-	if err := uu.uv.UserValidate(user); err != nil {
+func (uu *userUsecase) Login(user model.User) (string, model.UserResponse, error) {
+	// ログインバリデーション関数を呼び出す（UserLoginValidateは新しく作成する必要があります）
+	if err := uu.uv.UserLoginValidate(user); err != nil {
 		return "", model.UserResponse{}, err
 	}
 	storedUser := model.User{}
@@ -67,6 +73,7 @@ func (uu *userUsecase) Login(user model.User) (string, model.UserResponse, error
 	resUser := model.UserResponse{
 		ID:    storedUser.ID,
 		Email: storedUser.Email,
+		Name:  storedUser.Name,
 	}
-	return tokenString, resUser, nil  // トークン文字列とユーザー情報を返す
+	return tokenString, resUser, nil
 }
