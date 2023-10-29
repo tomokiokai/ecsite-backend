@@ -33,7 +33,7 @@ func NewRouter(
 
 	// CORSミドルウェアの設定
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000", "https://ecsite-front-jxut6qp1e-tomokiokais-projects.vercel.app",os.Getenv("FE_URL")},
+		AllowOrigins: []string{"http://localhost:3000", os.Getenv("FE_URL")},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept,
 			echo.HeaderAccessControlAllowHeaders, echo.HeaderXCSRFToken,"Authorization" },
 		AllowMethods:     []string{"GET", "PUT", "POST", "DELETE"},
