@@ -55,8 +55,10 @@ func NewRouter(
 	e.POST("/logout", uc.LogOut)
 	e.GET("/csrf", uc.CsrfToken)
 
-	e.GET("/shops", sc.GetAllShops)
-	e.GET("/shops/:shopId", sc.GetShopById)
+	// CSRFミドルウェアを適用しないエンドポイントのグループ
+	s := e.Group("")
+	s.GET("/shops", sc.GetAllShops)
+	s.GET("/shops/:shopId", sc.GetShopById)
 
 	// tasksエンドポイントの設定
 	t := e.Group("/tasks")
