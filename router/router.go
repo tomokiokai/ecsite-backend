@@ -46,6 +46,7 @@ func NewRouter(
 		CookieDomain:   os.Getenv("API_DOMAIN"),
 		CookieHTTPOnly: true,
 		CookieSameSite: http.SameSiteNoneMode,
+		CookieSecure:   true,  // これを追加
 		TokenLookup:    "header:X-CSRF-Token",
 	}))
 
