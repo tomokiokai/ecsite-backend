@@ -55,6 +55,7 @@ func NewRouter(
 	e.POST("/login", uc.LogIn)
 	e.POST("/logout", uc.LogOut)
 	e.GET("/csrf", uc.CsrfToken)
+	e.GET("/cookies", uc.GetCookies)
 
 	// CSRFミドルウェアを適用しないエンドポイントのグループ
 	s := e.Group("")

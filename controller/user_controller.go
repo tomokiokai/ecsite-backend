@@ -18,6 +18,7 @@ type IUserController interface {
 	LogIn(c echo.Context) error
 	LogOut(c echo.Context) error
 	CsrfToken(c echo.Context) error
+	GetCookies(c echo.Context) error 
 }
 
 type userController struct {
@@ -113,4 +114,18 @@ func (uc *userController) CsrfToken(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"csrf_token": token,
 	})
+}
+
+func (uc *userController) GetCookies(c echo.Context) error {
+    // リクエストから全てのクッキーを取得
+    cookies := c.Cookies()
+
+    // クッキーの情報を格納するためのマップ
+    cookieMap := make(map[string]string)
+    for _, cookie := range cookies {
+        cookieMap[cookie.Name] = cookie.Value
+    }
+
+    // クッキーの情報をJSONとして返す
+    return c.JSON(http.StatusOK, cookieMap)
 }
