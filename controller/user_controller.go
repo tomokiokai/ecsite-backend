@@ -123,6 +123,7 @@ func (uc *userController) GetCookies(c echo.Context) error {
     // クッキーの情報を格納するためのマップ
     cookieMap := make(map[string]string)
     for _, cookie := range cookies {
+			fmt.Println("Cookie:", cookie.Name, "Value:", cookie.Value) // この行を追加
         cookieMap[cookie.Name] = cookie.Value
     }
 
