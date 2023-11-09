@@ -38,6 +38,9 @@ func NewRouter(
 			echo.HeaderAccessControlAllowHeaders, echo.HeaderXCSRFToken,"Authorization" },
 		AllowMethods:     []string{"GET", "PUT", "POST", "DELETE"},
 		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) (bool, error) {
+        return origin == "http://localhost:3000" || origin == os.Getenv("FE_URL"), nil
+    },
 	}))
 
 	// CSRFミドルウェアの設定
