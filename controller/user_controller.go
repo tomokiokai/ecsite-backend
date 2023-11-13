@@ -74,9 +74,9 @@ func (uc *userController) LogIn(c echo.Context) error {
 	userCookie.Expires = time.Now().Add(3 * time.Hour)
 	userCookie.Path = "/"
 	userCookie.Domain = os.Getenv("API_DOMAIN")
-	userCookie.Secure = true
+	userCookie.Secure = false // falseに設定するか、この行を削除
 	userCookie.HttpOnly = true
-	userCookie.SameSite = http.SameSiteNoneMode
+	userCookie.SameSite = http.SameSiteLaxMode // NoneからLaxまたはStrictに変更
 	fmt.Println("Encoded User Cookie Value:", userCookie.Value)
 	c.SetCookie(userCookie)
 	return c.NoContent(http.StatusOK)
