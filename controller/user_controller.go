@@ -73,7 +73,7 @@ func (uc *userController) LogIn(c echo.Context) error {
 	userCookie.Value = encodedUserInfo
 	userCookie.Expires = time.Now().Add(3 * time.Hour)
 	userCookie.Path = "/"
-	userCookie.Domain = os.Getenv("API_DOMAIN")
+	userCookie.Domain = "https://ecsite-lqh9.onrender.com"
 	userCookie.Secure = true
 	userCookie.HttpOnly = true
 	userCookie.SameSite = http.SameSiteNoneMode
