@@ -57,7 +57,7 @@ func (uc *userController) LogIn(c echo.Context) error {
 	cookie.Expires = time.Now().Add(3 * time.Hour)
 	cookie.Path = "/"
 	cookie.Domain = os.Getenv("API_DOMAIN")
-	cookie.Secure = true
+	cookie.Secure = false
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(cookie)
@@ -74,7 +74,7 @@ func (uc *userController) LogIn(c echo.Context) error {
 	userCookie.Expires = time.Now().Add(3 * time.Hour)
 	userCookie.Path = "/"
 	userCookie.Domain = os.Getenv("API_DOMAIN")
-	userCookie.Secure = true
+	userCookie.Secure = false
 	userCookie.HttpOnly = true
 	userCookie.SameSite = http.SameSiteNoneMode
 	fmt.Println("Encoded User Cookie Value:", userCookie.Value)
@@ -90,7 +90,7 @@ func (uc *userController) LogOut(c echo.Context) error {
 	cookie.Expires = time.Now()
 	cookie.Path = "/"
 	cookie.Domain = os.Getenv("API_DOMAIN")
-	cookie.Secure = true
+	cookie.Secure = false
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(cookie)
@@ -102,7 +102,7 @@ func (uc *userController) LogOut(c echo.Context) error {
 	userCookie.Expires = time.Now() 
 	userCookie.Path = "/"
 	userCookie.Domain = os.Getenv("API_DOMAIN")
-	userCookie.Secure = true
+	userCookie.Secure = false
 	userCookie.HttpOnly = true
 	userCookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(userCookie)
