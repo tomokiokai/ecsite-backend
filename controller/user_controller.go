@@ -91,7 +91,7 @@ func (uc *userController) LogOut(c echo.Context) error {
 	cookie.Path = "/"
 	cookie.Domain = os.Getenv("API_DOMAIN")
 	cookie.Secure = true
-	cookie.HttpOnly = false 
+	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(cookie)
 
@@ -103,7 +103,7 @@ func (uc *userController) LogOut(c echo.Context) error {
 	userCookie.Path = "/"
 	userCookie.Domain = os.Getenv("API_DOMAIN")
 	userCookie.Secure = true
-	userCookie.HttpOnly = false 
+	userCookie.HttpOnly = true
 	userCookie.SameSite = http.SameSiteNoneMode
 	c.SetCookie(userCookie)
 	return c.NoContent(http.StatusOK)
