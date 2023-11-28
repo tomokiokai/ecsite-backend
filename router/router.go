@@ -60,6 +60,14 @@ func NewRouter(
 	e.GET("/csrf", uc.CsrfToken)
 	e.GET("/cookies", uc.GetCookies)
 
+	// 新しいエンドポイント '/user' を追加
+    u := e.Group("/user")
+    u.Use(echojwt.WithConfig(echojwt.Config{
+        SigningKey:  []byte(os.Getenv("SECRET")),
+        TokenLookup: "cookie:token",
+    }))
+    u.GET("", uc.GetUser)
+
 	// CSRFミドルウェアを適用しないエンドポイントのグループ
 	s := e.Group("")
 	s.GET("/shops", sc.GetAllShops)

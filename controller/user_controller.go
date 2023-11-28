@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 	"encoding/json"
+	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/labstack/echo/v4"
 )
@@ -19,6 +20,7 @@ type IUserController interface {
 	LogOut(c echo.Context) error
 	CsrfToken(c echo.Context) error
 	GetCookies(c echo.Context) error 
+	GetUser(c echo.Context) error 
 }
 
 type userController struct {
@@ -129,4 +131,26 @@ func (uc *userController) GetCookies(c echo.Context) error {
 
     // クッキーの情報をJSONとして返す
     return c.JSON(http.StatusOK, cookieMap)
+}
+
+// userControllerに追加するGetUserメソッド
+func (uc *userController) GetUser(c echo.Context) error {
+    // JWTトークンからユーザーIDを取得
+    userToken := c.Get("user").(*jwt.Token)
+    claims := userToken.Claims.(jwt.MapClaims)
+    
+    // userIDをfloat64として取得し、その後uintに変換
+    userIDFloat, ok := claims["user_id"].(float64)
+    if !ok {
+        return c.JSON(http.StatusBadRequest, "Invalid user ID format")
+    }
+    userID := uint(userIDFloat)
+
+    // データベースからユーザー情報を取得
+    userInfo, err := uc.uu.GetUserByID(userID)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, err.Error())
+    }
+
+    return c.JSON(http.StatusOK, userInfo)
 }

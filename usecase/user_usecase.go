@@ -14,6 +14,7 @@ import (
 type IUserUsecase interface {
 	SignUp(user model.User) (model.UserResponse, error)
 	Login(user model.User) (string, model.UserResponse, error)
+	GetUserByID(userID uint) (model.UserResponse, error)
 }
 
 type userUsecase struct {
@@ -76,4 +77,18 @@ func (uu *userUsecase) Login(user model.User) (string, model.UserResponse, error
 		Name:  storedUser.Name,
 	}
 	return tokenString, resUser, nil
+}
+
+// GetUserByID メソッドを追加
+func (uu *userUsecase) GetUserByID(userID uint) (model.UserResponse, error) {
+    user := model.User{}
+    err := uu.ur.GetUserById(&user, userID)
+    if err != nil {
+        return model.UserResponse{}, err
+    }
+    return model.UserResponse{
+        ID:    user.ID,
+        Email: user.Email,
+        Name:  user.Name,
+    }, nil
 }
