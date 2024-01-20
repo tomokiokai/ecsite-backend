@@ -4,11 +4,39 @@ import (
 	"go-rest-api/controller"
 	"net/http"
 	"os"
-
+	"io"
+    "bytes"
+"fmt"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
+// LoggerMiddlewareは、リクエストのヘッダーとボディをログに出力するミドルウェアです。
+func LoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+        // リクエストURLをログに出力
+        fmt.Printf("Request URL: %s\n", c.Request().URL)
+
+        // リクエストヘッダーをログに出力
+        fmt.Printf("Request Headers: %+v\n", c.Request().Header)
+
+        // リクエストボディを読み込む
+        body, err := io.ReadAll(c.Request().Body)
+        if err != nil {
+            // エラー処理
+            return err
+        }
+
+        // リクエストボディをログに出力
+        fmt.Printf("Request Body: %s\n", string(body))
+
+        // リクエストボディを再設定（重要）
+        c.Request().Body = io.NopCloser(bytes.NewBuffer(body))
+
+        return next(c)
+    }
+}
+
 
 // APIキーを検証するカスタムミドルウェア
 func ValidateBuildAPIKey(next echo.HandlerFunc) echo.HandlerFunc {
@@ -31,6 +59,9 @@ func NewRouter(
 ) *echo.Echo {
 	e := echo.New()
 
+	// LoggerMiddlewareを追加
+    e.Use(LoggerMiddleware)
+
 	// CORSミドルウェアの設定
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:3000", "https://ecsite-front.vercel.app"},
@@ -43,7 +74,10 @@ func NewRouter(
     },
 	}))
 
-	// CSRFミドルウェアの設定
+    authGroup := e.Group("/auth")
+    authGroup.POST("/login", uc.AuthLogin)
+
+    // CSRFミドルウェアの設定
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		CookiePath:     "/",
 		CookieDomain:   os.Getenv("API_DOMAIN"),
@@ -51,6 +85,10 @@ func NewRouter(
 		CookieSameSite: http.SameSiteNoneMode,
 		CookieSecure:   true,  // これを追加
 		TokenLookup:    "header:X-CSRF-Token",
+		Skipper: func(c echo.Context) bool {
+        // `/auth/login` へのリクエストをCSRFチェックから除外
+        return c.Path() == "/auth/login"
+    },
 	}))
 
 	// ユーザー関連のエンドポイント
@@ -67,6 +105,8 @@ func NewRouter(
         TokenLookup: "cookie:token",
     }))
     u.GET("", uc.GetUser)
+		u.GET("/token", uc.GetToken)
+
 
 	// CSRFミドルウェアを適用しないエンドポイントのグループ
 	s := e.Group("")

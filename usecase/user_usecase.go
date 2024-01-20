@@ -5,6 +5,7 @@ import (
 	"go-rest-api/repository"
 	"go-rest-api/validator"
 	"os"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -15,6 +16,7 @@ type IUserUsecase interface {
 	SignUp(user model.User) (model.UserResponse, error)
 	Login(user model.User) (string, model.UserResponse, error)
 	GetUserByID(userID uint) (model.UserResponse, error)
+	AuthenticateUser(user model.User) (model.UserResponse, error)
 }
 
 type userUsecase struct {
@@ -90,5 +92,33 @@ func (uu *userUsecase) GetUserByID(userID uint) (model.UserResponse, error) {
         ID:    user.ID,
         Email: user.Email,
         Name:  user.Name,
+    }, nil
+}
+
+func (uu *userUsecase) AuthenticateUser(user model.User) (model.UserResponse, error) {
+    log.Println("AuthenticateUser method called") // この行を追加
+
+    // ユーザーが提供したメールアドレスでDBを検索
+    storedUser := model.User{}
+    log.Println("Searching user by email") // この行を追加
+    if err := uu.ur.GetUserByEmail(&storedUser, user.Email); err != nil {
+        log.Printf("User not found: %v", err) // この行を追加
+        return model.UserResponse{}, err
+    }
+
+    // パスワードの検証
+    log.Println("Validating password") // この行を追加
+    if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(user.Password)); err != nil {
+        log.Printf("Password validation failed: %v", err) // この行を追加
+        return model.UserResponse{}, err
+    }
+
+    log.Println("User authenticated successfully") // この行を追加
+
+    // 認証が成功した場合、ユーザー情報を返す
+    return model.UserResponse{
+        ID:    storedUser.ID,
+        Email: storedUser.Email,
+        Name:  storedUser.Name,
     }, nil
 }
