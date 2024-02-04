@@ -24,6 +24,7 @@ type IUserController interface {
 	GetUser(c echo.Context) error
 	GetToken(c echo.Context) error 
 	AuthLogin(c echo.Context) error
+	AuthSignup(c echo.Context) error
 }
 
 type userController struct {
@@ -215,6 +216,43 @@ func (uc *userController) AuthLogin(c echo.Context) error {
     // JWTトークンを含むレスポンスを返す
     return c.JSON(http.StatusOK, map[string]interface{}{
         "user": authenticatedUser,
+        "jwt":  tokenString,
+    })
+}
+
+// userControllerに追加するAuthSignupメソッド
+func (uc *userController) AuthSignup(c echo.Context) error {
+    var user model.User
+    if err := c.Bind(&user); err != nil {
+        log.Printf("Error in AuthSignup: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request"})
+    }
+
+    // 既存のユーザーを検索または新規ユーザーを作成
+    userRes, err := uc.uu.FindOrCreateUser(user.Email, user.Name)
+    if err != nil {
+        log.Printf("User processing failed: %v", err)
+        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "User processing failed"})
+    }
+
+    // JWTトークンの生成
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+        "user_id": userRes.ID,
+        "name":  userRes.Name,
+        "email": userRes.Email,
+        "exp":   time.Now().Add(time.Hour * 24).Unix(),
+    })
+
+    // 環境変数からJWTシークレットを取得
+    secretKey := os.Getenv("SECRET")
+    tokenString, err := token.SignedString([]byte(secretKey))
+    if err != nil {
+        log.Printf("Token signing error: %v", err)
+        return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Token signing error"})
+    }
+
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "user": userRes,
         "jwt":  tokenString,
     })
 }

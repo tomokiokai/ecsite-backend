@@ -7,6 +7,8 @@ import (
 	"os"
 	"log"
 	"time"
+	"errors" 
+  "gorm.io/gorm"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -17,6 +19,7 @@ type IUserUsecase interface {
 	Login(user model.User) (string, model.UserResponse, error)
 	GetUserByID(userID uint) (model.UserResponse, error)
 	AuthenticateUser(user model.User) (model.UserResponse, error)
+	FindOrCreateUser(email, name string) (model.UserResponse, error)
 }
 
 type userUsecase struct {
@@ -120,5 +123,33 @@ func (uu *userUsecase) AuthenticateUser(user model.User) (model.UserResponse, er
         ID:    storedUser.ID,
         Email: storedUser.Email,
         Name:  storedUser.Name,
+    }, nil
+}
+
+func (uu *userUsecase) FindOrCreateUser(email, name string) (model.UserResponse, error) {
+    var user model.User
+    err := uu.ur.GetUserByEmail(&user, email)
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            // ユーザーが存在しない場合、新規作成
+            user = model.User{
+                Email: email,
+                Name:  name,
+                // パスワードはOAuthの場合、空またはランダムに生成した値を設定
+            }
+            if err := uu.ur.CreateUser(&user); err != nil {
+                return model.UserResponse{}, err
+            }
+        } else {
+            // データベースエラー
+            return model.UserResponse{}, err
+        }
+    }
+
+    // ユーザーが既に存在するか、新規作成された場合のレスポンス
+    return model.UserResponse{
+        ID:    user.ID,
+        Email: user.Email,
+        Name:  user.Name,
     }, nil
 }

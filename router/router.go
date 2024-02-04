@@ -76,6 +76,7 @@ func NewRouter(
 
     authGroup := e.Group("/auth")
     authGroup.POST("/login", uc.AuthLogin)
+		authGroup.POST("/signup", uc.AuthSignup)
 
     // CSRFミドルウェアの設定
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
@@ -86,8 +87,8 @@ func NewRouter(
 		CookieSecure:   true,  // これを追加
 		TokenLookup:    "header:X-CSRF-Token",
 		Skipper: func(c echo.Context) bool {
-        // `/auth/login` へのリクエストをCSRFチェックから除外
-        return c.Path() == "/auth/login"
+        // `/auth/login` と `/auth/signup` へのリクエストをCSRFチェックから除外
+        return c.Path() == "/auth/login" || c.Path() == "/auth/signup"
     },
 	}))
 
