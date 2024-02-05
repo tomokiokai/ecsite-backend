@@ -20,6 +20,7 @@ type IUserUsecase interface {
 	GetUserByID(userID uint) (model.UserResponse, error)
 	AuthenticateUser(user model.User) (model.UserResponse, error)
 	FindOrCreateUser(email, name string) (model.UserResponse, error)
+	GenerateJWT(userID uint) (string, error)
 }
 
 type userUsecase struct {
@@ -152,4 +153,18 @@ func (uu *userUsecase) FindOrCreateUser(email, name string) (model.UserResponse,
         Email: user.Email,
         Name:  user.Name,
     }, nil
+}
+
+func (uu *userUsecase) GenerateJWT(userID uint) (string, error) {
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+        "user_id": userID,
+        "exp":     time.Now().Add(24 * time.Hour).Unix(),
+    })
+
+    tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
+    if err != nil {
+        return "", err
+    }
+
+    return tokenString, nil
 }

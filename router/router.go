@@ -77,6 +77,8 @@ func NewRouter(
     authGroup := e.Group("/auth")
     authGroup.POST("/login", uc.AuthLogin)
 		authGroup.POST("/signup", uc.AuthSignup)
+		authGroup.POST("/oauth/login", uc.HandleOAuthLogin)
+
 
     // CSRFミドルウェアの設定
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{

@@ -25,6 +25,8 @@ type IUserController interface {
 	GetToken(c echo.Context) error 
 	AuthLogin(c echo.Context) error
 	AuthSignup(c echo.Context) error
+    OAuthLogin(c echo.Context, email string, name string) error
+    HandleOAuthLogin(c echo.Context) error 
 }
 
 type userController struct {
@@ -255,4 +257,40 @@ func (uc *userController) AuthSignup(c echo.Context) error {
         "user": userRes,
         "jwt":  tokenString,
     })
+}
+
+func (uc *userController) OAuthLogin(c echo.Context, email string, name string) error {
+    // Find or create user based on email
+    userResponse, err := uc.uu.FindOrCreateUser(email, name)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, err.Error())
+    }
+
+    // Generate JWT token for the user
+    tokenString, err := uc.uu.GenerateJWT(userResponse.ID)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, err.Error())
+    }
+
+    // Set JWT token in a HttpOnly cookie
+    cookie := new(http.Cookie)
+    cookie.Name = "token"
+    cookie.Value = tokenString
+    cookie.Expires = time.Now().Add(3 * time.Hour)
+    cookie.Path = "/"
+    cookie.Domain = os.Getenv("API_DOMAIN")
+    cookie.HttpOnly = true
+    cookie.Secure = true // Set to false if not using HTTPS
+    cookie.SameSite = http.SameSiteNoneMode
+    c.SetCookie(cookie)
+
+    // Optionally, redirect the user or return a success response
+    return c.JSON(http.StatusOK, echo.Map{"success": true})
+}
+
+func (uc *userController) HandleOAuthLogin(c echo.Context) error {
+    // OAuthログイン処理の実装
+    email := c.FormValue("email")
+    name := c.FormValue("name")
+    return uc.OAuthLogin(c, email, name)
 }
